@@ -1,0 +1,89 @@
+﻿@page "/boatsList"
+@inject IBoatService BoatService
+@inject ModalService _modalService
+@inject NavigationManager NavigationManager
+
+<div class="content-header">
+    <div class="container-fluid">
+
+        <a href="/createBoat" class="btn btn-secondary btn-flat add">
+            <i class="fa fa-plus"></i> New Boat
+        </a>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Boats</li>
+            </ol>
+        </nav>
+
+        <hr>
+    </div>
+</div>
+
+
+<Card Hoverable Title="Boats List">
+    <Table DataSource="Boats" PageSize="10" Loading="_loading" Size="TableSize.Small" Class="table table-responsive">
+        <Column @bind-Field="@context.BoatName"></Column>
+        <Column @bind-Field="@context.BoatCaptain"></Column>
+        <ActionColumn Title="Action">
+            <Space>
+                <SpaceItem>
+                    <Button Type="@ButtonType.Link" Icon="edit" Color="Color.Green5"
+                            OnClick="@(() => NavigationManager.NavigateTo($"editBoat/{context.BoatId}"))">
+                    </Button>
+
+                    <Button Type="@ButtonType.Link" Icon="delete" Color="Color.Red5"
+                            OnClick="@(() => { _visible = true; _Id = context.BoatId; })">
+                    </Button>
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </Table>
+</Card>
+
+
+<Modal Title="@_title" Visible="@_visible" OnOk="@HandleOk" OnCancel="@HandleCancel" DestroyOnClose="true" OkType="danger">
+    Do you want to Delete This Boat?
+</Modal>
+@code {
+
+    bool _loading;
+    public List<Boat> Boats { get; set; } = new List<Boat>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        Boats = (await BoatService.GetBoats()).ToList();
+        _loading = false;
+    }
+
+    string _title = "Delete Confirmation";
+    bool _visible = false;
+    int _Id;
+
+    private async Task HandleOk(MouseEventArgs e)
+    {
+        await BoatService.DeleteBoat(_Id);
+        Boats = (await BoatService.GetBoats()).ToList();
+        _visible = false;
+        HandleSuccessDelete();
+    }
+
+    private void HandleCancel(MouseEventArgs e)
+    {
+        _visible = false;
+    }
+
+    public void HandleSuccessDelete()
+    {
+        _modalService.Success(new ConfirmOptions()
+        {
+            Title = "Success.",
+            Content = "Boat Deleted Successfully.",
+            OnOk = OnOkClick
+        });
+    }
+
+    public Func<ModalClosingEventArgs, Task> OnOkClick = async (e) => { await Task.Delay(1000); };
+
+}

@@ -1,0 +1,251 @@
+﻿@page "/createBoatLoad"
+@inject IBoatLoadService BoatLoadService
+@inject IBoatLoadDetailsService BoatLoadDetailsService
+@inject IBoatService BoatService
+@inject IFishService FishService
+@inject ModalService _modalService
+@inject NavigationManager NavigationManager
+
+<div class="content-header">
+    <div class="container-fluid">
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/boatLoadsList">Boat Loads</a></li>
+                <li class="breadcrumb-item active" aria-current="page">New</li>
+            </ol>
+        </nav>
+
+        <hr>
+    </div>
+</div>
+
+<Card Hoverable Title="New Boat Load" Loading="_loading">
+    <Form Model="@BoatLoad"
+          OnFinish="HandleValidSubmit"
+          Layout="vertical">
+        <ValidationSummary />
+        <FormItem Label="Delivery Date">
+            <DatePicker DefaultValue="DateTime.Today" @bind-Value="@context.LoadDeliveryDate" />
+        </FormItem>
+        <FormItem Label="Boat">
+            <Select DataSource="@Boats"
+                    Placeholder="Please Select Boat ..."
+                    DefaultActiveFirstOption="false"
+                    ValueName="@nameof(Boat.BoatId)"
+                    LabelName="@nameof(Boat.BoatName)"
+                    @bind-Value="@context.BoatId"
+                    EnableSearch
+                    AllowClear>
+            </Select>
+        </FormItem>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr class="bg-primary">
+                    <th>Fish Type</th>
+                    <th>Quantity</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <th>
+                        <Select DataSource="@Fishs"
+                                Placeholder="Select Fish Type ..."
+                                DefaultActiveFirstOption="false"
+                                ValueName="@nameof(Fish.FishId)"
+                                LabelName="@nameof(Fish.FishName)"
+                                @bind-Value="@FishId"
+                                EnableSearch
+                                AllowClear>
+                        </Select>
+                    </th>
+                    <th>
+                        <Input @bind-Value="@BoatLoadDetails.Quantity" />
+                    </th>
+                    <th>
+                        <Button Type="@ButtonType.Primary" Icon="plus" @onclick="AddBoatLoadDetails"></Button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (LoadDetails.Count == 0)
+                {
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>Total = 0.00 KG</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in LoadDetails)
+                    {
+                        <tr>
+                            <td>
+                                @foreach (var fish in Fishs)
+                                {
+                                    if (fish.FishId == item.FishId)
+                                    {
+                                        @fish.FishName
+                                    }
+                                }
+                            </td>
+                            <td>@item.Quantity</td>
+                            <td>
+                                <Button Danger Icon="delete" @onclick="@(()=>DeleteBoatLoadDetails(item))"></Button>
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>Total = @context.Total.00 KG</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit">
+                Create
+            </Button>
+        </FormItem>
+    </Form>
+</Card>
+
+@code {
+    public List<Boat> Boats { get; set; } = new List<Boat>();
+    public Boat Boat { get; set; } = new Boat();
+    public List<Fish> Fishs { get; set; } = new List<Fish>();
+    public Fish Fish { get; set; } = new Fish();
+    public BoatLoad BoatLoad { get; set; } = new BoatLoad();
+
+    public List<BoatLoadDetails> LoadDetails { get; set; } = new List<BoatLoadDetails>();
+    public BoatLoadDetails BoatLoadDetails { get; set; } = new BoatLoadDetails();
+
+    bool _loading;
+    public int FishId { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        _loading = true;
+        Boats = (await BoatService.GetBoats()).ToList();
+        Fishs = (await FishService.GetFishs()).ToList();
+        _loading = false;
+
+    }
+
+
+    private void AddBoatLoadDetails()
+    {
+        // check if all feilds not empty
+        if (FishId != 0 && BoatLoadDetails.Quantity != 0)
+        {
+
+
+            //get all Fish with the same Id
+            var LoadDetailstoAdd = LoadDetails.Where(e => e.FishId == FishId);
+
+
+            //check if the Fish Id is Exist in the List
+            // if exist sent a Error message else add the row o the list
+            if (LoadDetailstoAdd.Any())
+            {
+                HandleInvalidAdd();
+            }
+            else
+            {
+
+                BoatLoadDetails.FishId = FishId;
+                // Add the row to the list
+                LoadDetails.Add(BoatLoadDetails);
+                // make the total in Boat Load = sum of all quantities in the list.
+                BoatLoad.Total = LoadDetails.Sum(c => c.Quantity);
+                //clear the selected boat load to add another.
+                BoatLoadDetails = new BoatLoadDetails();
+
+            }
+        }
+        else
+        {
+            _modalService.Error(new ConfirmOptions()
+            {
+                Title = "Error.",
+                Content = "Please Insert in the all fields.",
+            });
+
+            BoatLoadDetails = new BoatLoadDetails();
+        }
+
+    }
+
+    public void HandleInvalidAdd()
+    {
+        _modalService.Error(new ConfirmOptions()
+        {
+            Title = "Error.",
+            Content = "This fish type Is Allready Selected .",
+        });
+
+        BoatLoadDetails = new BoatLoadDetails();
+    }
+
+    //delete row from load Details list.
+    private void DeleteBoatLoadDetails(BoatLoadDetails item)
+    {
+        //check if the list is not empty.
+        if (LoadDetails.Count != 0)
+        {
+            // make the total in Boat Load = sum of all quantities in the list.
+            BoatLoad.Total = BoatLoad.Total - item.Quantity;
+        }
+        else
+        {
+            // if the list is empty
+            BoatLoad.Total = 0;
+        }
+        //remove the row.
+        LoadDetails.Remove(item);
+    }
+
+    protected async Task HandleValidSubmit()
+    {
+
+        var result = await BoatLoadService.AddBoatLoad(BoatLoad);
+        if (result != null)
+        {
+            foreach (var item in LoadDetails)
+            {
+                //update the Quantity of each Fish.
+                foreach (var fish in Fishs)
+                {
+                    if (item.FishId == fish.FishId)
+                    {
+                        var Quantity = fish.Quantity + item.Quantity;
+                        fish.Quantity = Quantity;
+                        await FishService.UpdateFish(fish);
+                    }
+                }
+                item.BoatLoadId = result.BoatLoadId;
+                item.DeliveredDate = result.LoadDeliveryDate;
+                await BoatLoadDetailsService.AddBoatLoadDetails(item);
+            }
+
+            HandleSuccessCreate();
+            NavigationManager.NavigateTo("/boatLoadsList");
+        }
+
+    }
+
+    public void HandleSuccessCreate()
+    {
+        _modalService.Success(new ConfirmOptions()
+        {
+            Title = "Success.",
+            Content = "BoatLoad Added Successfully.",
+            OnOk = OnOkClick
+        });
+    }
+
+    public Func<ModalClosingEventArgs, Task> OnOkClick = async (e) => { await Task.Delay(1000); };
+}

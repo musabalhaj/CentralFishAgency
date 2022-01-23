@@ -1,0 +1,72 @@
+﻿@page "/createAgent"
+@inject IAgentService AgentService
+@inject ModalService _modalService
+@inject NavigationManager NavigationManager
+
+    <div class="content-header">
+        <div class="container-fluid">
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/agentsList">Agents</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">New</li>
+                </ol>
+            </nav>
+
+            <hr>
+        </div>
+    </div>
+
+    <Card Hoverable Title="New Agent">
+        <Form Model="@Agent"
+              OnFinish="HandleValidSubmit"
+              Layout="vertical">
+            <ValidationSummary />
+            <FormItem Label="Name">
+                <Input @bind-Value="@context.AgentName" />
+            </FormItem>
+            <FormItem Label="Email">
+                <Input @bind-Value="@context.AgentEmail" />
+            </FormItem>
+            <FormItem Label="Phone">
+                <Input @bind-Value="@context.AgentPhone" />
+            </FormItem>
+            <FormItem Label="Address">
+                <Input @bind-Value="@context.AgentAddress" />
+            </FormItem>
+            <FormItem>
+                <Button Type="@ButtonType.Primary" HtmlType="submit">
+                    Create
+                </Button>
+            </FormItem>
+        </Form>
+    </Card>
+
+    @code {
+        public Agent Agent { get; set; } = new Agent();
+
+        protected async Task HandleValidSubmit()
+        {
+
+            var result = await AgentService.AddAgent(Agent);
+            if (result != null)
+            {
+                HandleSuccessCreate();
+                NavigationManager.NavigateTo("/agentsList");
+            }
+
+        }
+
+        public void HandleSuccessCreate()
+        {
+            _modalService.Success(new ConfirmOptions()
+            {
+                Title = "Success.",
+                Content = "Agent Added Successfully.",
+                OnOk = OnOkClick
+            });
+        }
+
+        public Func<ModalClosingEventArgs, Task> OnOkClick = async (e) => { await Task.Delay(1000); };
+    }

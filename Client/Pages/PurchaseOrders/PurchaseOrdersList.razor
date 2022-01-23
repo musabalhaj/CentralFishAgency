@@ -1,0 +1,103 @@
+﻿@page "/purchaseOrdersList"
+@inject IPurchaseOrderService PurchaseOrderService
+@inject IPurchaseDetailsService PurchaseDetailsService
+@inject ModalService _modalService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+
+<div class="content-header">
+    <div class="container-fluid">
+        <a href="/createPurchaseOrder" class="btn btn-secondary btn-flat add">
+            <i class="fa fa-plus"></i> New Purchase Order
+        </a>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Purchase Orders</li>
+            </ol>
+        </nav>
+        <hr>
+    </div>
+</div>
+
+<Card Hoverable Title="Purchase Orders List">
+
+    <Table DataSource="PurchaseOrders" Size="TableSize.Small" Class="table table-responsive" Loading="_loading">
+        <RowTemplate>
+            <Column @bind-Field="@context.PurchaseOrderId" Title="ID">Order ID-@context.PurchaseOrderId</Column>
+            <Column @bind-Field="@context.AgentId" Title="Agent">@context.Agent.AgentName</Column>
+            <Column @bind-Field="@context.PurchaseDate" Title="Date" TData="DateTime" Format="dd/MM/yyy" Filterable>
+                @context.PurchaseDate.ToLongDateString()
+            </Column>
+            <Column @bind-Field="@context.Total">@context.Total KG</Column>
+            <Column @bind-Field="@context.Status"></Column>
+            <ActionColumn Title="Actions">
+                <Space>
+                    <SpaceItem>
+                        <Button Type="@ButtonType.Link" Icon="eye" Color="Color.Blue5"
+                                OnClick="@(() => DisplayPurchaseOrder(context.PurchaseOrderId))">
+                        </Button>
+                        <Button Type="@ButtonType.Link" Icon="edit" Color="Color.Green5"
+                                OnClick="@(() => NavigationManager.NavigateTo($"editPurchaseOrder/{context.PurchaseOrderId}"))">
+                        </Button>
+                        <Button Danger OnClick="@(()=>{ _visible = true; _Id = context.PurchaseOrderId; })">
+                            <Icon Type="delete" Theme="outline" />
+                        </Button>
+                    </SpaceItem>
+                </Space>
+            </ActionColumn>
+        </RowTemplate>
+    </Table>
+</Card>
+
+<Modal Title="@_title" Visible="@_visible" OnOk="@HandleOk" OnCancel="@HandleCancel" DestroyOnClose="true" OkType="danger">
+    Do you want to Delete This Purchase Order?
+</Modal>
+
+@code{
+
+    bool _loading;
+
+    public List<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        PurchaseOrders = (await PurchaseOrderService.GetPurchaseOrders()).ToList();
+        _loading = false;
+
+    }
+
+    string _title = "Delete Confirmation";
+    bool _visible = false;
+    int _Id;
+
+    private async Task HandleOk(MouseEventArgs e)
+    {
+        await PurchaseOrderService.DeletePurchaseOrder(_Id);
+        PurchaseOrders = (await PurchaseOrderService.GetPurchaseOrders()).ToList();
+        _visible = false;
+        HandleSuccessDelete();
+    }
+
+    private void HandleCancel(MouseEventArgs e) { _visible = false; }
+
+    public void HandleSuccessDelete()
+    {
+        _modalService.Success(new ConfirmOptions()
+        {
+            Title = "Success.",
+            Content = "Purchase Order Deleted Successfully.",
+            OnOk = OnOkClick
+        });
+    }
+
+    public Func<ModalClosingEventArgs, Task> OnOkClick = async (e) => { await Task.Delay(1000); };
+
+    private async Task DisplayPurchaseOrder(int id)
+    {
+        await JSRuntime.InvokeAsync<object>("open", new object[] { $"displayPurchaseOrder/{id}", "_blank" });
+    }
+}
+

@@ -1,0 +1,74 @@
+﻿@page "/editFish/{id:int}"
+@inject IFishService FishService
+@inject ModalService _modalService
+@inject NavigationManager NavigationManager
+
+
+<div class="content-header">
+    <div class="container-fluid">
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/fishsList">Fishs</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit</li>
+            </ol>
+        </nav>
+
+        <hr>
+    </div>
+</div>
+
+<Card Hoverable Title="Edit Fish" Loading="_loading">
+    <Form Model="@Fish"
+          OnFinish="HandleValidSubmit"
+          Layout="vertical">
+        <ValidationSummary />
+        <FormItem Label="Name">
+            <Input @bind-Value="@context.FishName" />
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit">
+                Update
+            </Button>
+        </FormItem>
+    </Form>
+</Card>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    bool _loading;
+    public Fish Fish { get; set; } = new Fish();
+
+    protected async override Task OnParametersSetAsync()
+    {
+        _loading = true;
+        Fish = await FishService.GetFish(Id);
+        _loading = false;
+    }
+
+    protected async Task HandleValidSubmit()
+    {
+
+        var result = await FishService.UpdateFish(Fish);
+        if (result != null)
+        {
+            HandleSuccessUpdate();
+            NavigationManager.NavigateTo("/fishsList");
+        }
+
+    }
+
+    public void HandleSuccessUpdate()
+    {
+        _modalService.Success(new ConfirmOptions()
+        {
+            Title = "Success.",
+            Content = "Fish Updated Successfully.",
+            OnOk = OnOkClick
+        });
+    }
+
+    public Func<ModalClosingEventArgs, Task> OnOkClick = async (e) => { await Task.Delay(1000); };
+}

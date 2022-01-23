@@ -1,0 +1,23 @@
+<Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(EmptyLayout)">
+            <Card>
+                <Result Status="404"
+                        Title="Not Found"
+                        SubTitle="Sorry, the page you visited does not exist."
+                        Extra="extra" />
+            </Card>
+        </LayoutView>
+    </NotFound>
+</Router>
+<AntContainer />
+@code
+{
+    RenderFragment extra =@<Template>
+        <PageHeader Class="site-page-header" Title="Go Back" Subtitle="Click the Icon to go back" BackIcon="@("backward")" />
+    </Template>;
+
+}

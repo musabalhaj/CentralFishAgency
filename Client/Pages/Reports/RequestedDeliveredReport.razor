@@ -1,0 +1,80 @@
+﻿@page "/requestedDeliveredReport"
+@inject IReportService ReportService
+@inject IJSRuntime JSRuntime
+
+<div class="content-header">
+    <div class="container-fluid">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Requested vs Delivered Report</li>
+            </ol>
+        </nav>
+
+        <hr>
+    </div>
+</div>
+
+
+<Card Hoverable Title="Requested vs Delivered Report">
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <EnumSelect TEnum="Status" @bind-Value="@Status" />
+        </div>
+        <div class="col-md-3">
+            From <DatePicker DefaultValue="DateTime.Today" @bind-Value="@FromDate" />
+        </div>
+        <div class="col-md-3">
+            To <DatePicker DefaultValue="DateTime.Today" @bind-Value="@ToDate" />
+        </div>
+        <div class="col-md-3">
+            <Button Type="@ButtonType.Primary" HtmlType="submit" OnClick="Search">
+                Search
+            </Button>
+        </div>
+    </div>
+
+    <Table DataSource="PurchaseOrders" Size="TableSize.Small" Class="table table-responsive" Loading="_loading">
+        <RowTemplate>
+            <Column @bind-Field="@context.PurchaseOrderId" Title="ID">Order ID-@context.PurchaseOrderId</Column>
+            <Column @bind-Field="@context.AgentId" Title="Agent">@context.Agent.AgentName</Column>
+            <Column @bind-Field="@context.PurchaseDate" Title="Date" TData="DateTime" Format="dd/MM/yyy" Filterable>
+                @context.PurchaseDate.ToLongDateString()
+            </Column>
+            <Column @bind-Field="@context.Total">@context.Total KG</Column>
+            <Column @bind-Field="@context.Status"></Column>
+            <ActionColumn Title="Actions">
+                <Space>
+                    <SpaceItem>
+                        <Button Type="@ButtonType.Link" Icon="eye" Color="Color.Blue5"
+                                OnClick="@(() => DisplayPurchaseOrder(context.PurchaseOrderId))">
+                        </Button>
+                    </SpaceItem>
+                </Space>
+            </ActionColumn>
+        </RowTemplate>
+    </Table>
+</Card>
+
+@code {
+
+    bool _loading;
+    public Status Status { get; set; } = new Status();
+    public DateTime FromDate { get; set; }
+    public DateTime ToDate { get; set; }
+    public PurchaseOrder PurchaseOrder { get; set; } = new PurchaseOrder();
+    public List<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
+
+  
+    protected async Task Search()
+    {
+        _loading = true;
+        PurchaseOrders = (await ReportService.RequestedDeliveredReport(Status,FromDate,ToDate)).ToList();
+        _loading = false;
+    }
+
+    private async Task DisplayPurchaseOrder(int id)
+    {
+        await JSRuntime.InvokeAsync<object>("open", new object[] { $"displayPurchaseOrder/{id}", "_blank" });
+    }
+}

@@ -1,0 +1,58 @@
+﻿@page "/fishQuantityReport"
+@inject IReportService ReportService
+@inject IJSRuntime JSRuntime
+
+<div class="content-header">
+    <div class="container-fluid">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Month Quantity Report</li>
+            </ol>
+        </nav>
+
+        <hr>
+    </div>
+</div>
+
+
+<Card Hoverable Title="Month Quantity Report">
+    <div class="row mb-3">
+        <div class="col-md-2">
+            <DatePicker DefaultValue="DateTime.Today"  @bind-Value="@Month" />
+        </div>
+        <div class="col-md-10">
+            <Button Type="@ButtonType.Primary" HtmlType="submit" OnClick="Search">
+                Search
+            </Button>
+        </div>
+    </div>
+
+    <Table DataSource="BoatLoadDetailss" Size="TableSize.Small" Class="table table-responsive" Loading="_loading">
+        <RowTemplate>
+            <Column @bind-Field="@context.BoatLoadId" Title="Batch ID">Batch ID-@context.BoatLoadId</Column>
+            <Column @bind-Field="@context.FishId" Title="Fish Type">@context.Fish.FishName</Column>
+            <Column @bind-Field="@context.Quantity">@context.Quantity KG</Column>
+            <Column @bind-Field="@context.DeliveredDate" Title="Delivered Date" TData="DateTime">
+                @context.DeliveredDate.ToLongDateString()
+            </Column>
+        </RowTemplate>
+    </Table>
+</Card>
+
+@code {
+
+    bool _loading;
+    public DateTime Month { get; set; } 
+    public BoatLoadDetails BoatLoadDetails { get; set; } = new BoatLoadDetails();
+    public List<BoatLoadDetails> BoatLoadDetailss { get; set; } = new List<BoatLoadDetails>();
+
+
+    protected async Task Search()
+    {
+        _loading = true;
+        BoatLoadDetailss = (await ReportService.FishQuantityReport(Month.Month)).ToList();
+        _loading = false;
+    }
+
+}

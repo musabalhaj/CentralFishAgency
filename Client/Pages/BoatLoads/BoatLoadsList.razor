@@ -1,0 +1,100 @@
+﻿@page "/boatLoadsList"
+@inject IBoatLoadService BoatLoadService
+@inject ModalService _modalService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="content-header">
+    <div class="container-fluid">
+
+        <a href="/createBoatLoad" class="btn btn-secondary btn-flat add">
+            <i class="fa fa-plus"></i> New Boat Load
+        </a>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Boat Loads</li>
+            </ol>
+        </nav>
+
+        <hr>
+    </div>
+</div>
+
+
+<Card Hoverable Title="Boat Loads List">
+    <Table DataSource="BoatLoads" PageSize="10" Loading="_loading" Size="TableSize.Small" Class="table table-responsive">
+        <Column @bind-Field="@context.BoatLoadId" Title="Batch Number">Batch-@context.BoatLoadId</Column>
+        <Column @bind-Field="@context.BoatId">@context.Boat.BoatName</Column>
+        <Column @bind-Field="@context.Total">@context.Total KG</Column>
+        <Column @bind-Field="@context.LoadDeliveryDate" Title="Delivery Date">@context.LoadDeliveryDate.ToLongDateString()</Column>
+        <ActionColumn Title="Action">
+            <Space>
+                <SpaceItem>
+                    <Button Type="@ButtonType.Link" Icon="eye" Color="Color.Blue5"
+                            OnClick="@(() => DisplayBoatLoad(context.BoatLoadId))">
+                    </Button>
+
+                    <Button Type="@ButtonType.Link" Icon="edit" Color="Color.Green5"
+                            OnClick="@(() => NavigationManager.NavigateTo($"editBoatLoad/{context.BoatLoadId}"))">
+                    </Button>
+
+                    <Button Type="@ButtonType.Link" Icon="delete" Color="Color.Red5"
+                            OnClick="@(() => { _visible = true; _Id = context.BoatLoadId; })">
+                    </Button>
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </Table>
+</Card>
+
+
+<Modal Title="@_title" Visible="@_visible" OnOk="@HandleOk" OnCancel="@HandleCancel" DestroyOnClose="true" OkType="danger">
+    Do you want to Delete This Boat Load?
+</Modal>
+@code {
+
+    bool _loading;
+    public List<BoatLoad> BoatLoads { get; set; } = new List<BoatLoad>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        BoatLoads = (await BoatLoadService.GetBoatLoads()).ToList();
+        _loading = false;
+    }
+
+    string _title = "Delete Confirmation";
+    bool _visible = false;
+    int _Id;
+
+    private async Task HandleOk(MouseEventArgs e)
+    {
+        await BoatLoadService.DeleteBoatLoad(_Id);
+        BoatLoads = (await BoatLoadService.GetBoatLoads()).ToList();
+        _visible = false;
+        HandleSuccessDelete();
+    }
+
+    private void HandleCancel(MouseEventArgs e)
+    {
+        _visible = false;
+    }
+
+    public void HandleSuccessDelete()
+    {
+        _modalService.Success(new ConfirmOptions()
+        {
+            Title = "Success.",
+            Content = "Boat Load Deleted Successfully.",
+            OnOk = OnOkClick
+        });
+    }
+
+    public Func<ModalClosingEventArgs, Task> OnOkClick = async (e) => { await Task.Delay(1000); };
+
+    private async Task DisplayBoatLoad(int id)
+    {
+        await JSRuntime.InvokeAsync<object>("open", new object[] { $"displayBoatLoad/{id}", "_blank" });
+    }
+}

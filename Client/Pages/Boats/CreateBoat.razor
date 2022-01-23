@@ -1,0 +1,66 @@
+﻿@page "/createBoat"
+@inject IBoatService BoatService
+@inject ModalService _modalService
+@inject NavigationManager NavigationManager
+
+<div class="content-header">
+    <div class="container-fluid">
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/boatsList">Boats</a></li>
+                <li class="breadcrumb-item active" aria-current="page">New</li>
+            </ol>
+        </nav>
+
+        <hr>
+    </div>
+</div>
+
+<Card Hoverable Title="New Boat">
+    <Form Model="@Boat"
+          OnFinish="HandleValidSubmit"
+          Layout="vertical">
+        <ValidationSummary />
+        <FormItem Label="Name">
+            <Input @bind-Value="@context.BoatName" />
+        </FormItem>
+        <FormItem Label="Captain">
+            <Input @bind-Value="@context.BoatCaptain" />
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit">
+                Create
+            </Button>
+        </FormItem>
+    </Form>
+</Card>
+
+@code {
+    public Boat Boat { get; set; } = new Boat();
+
+    protected async Task HandleValidSubmit()
+    {
+
+        var result = await BoatService.AddBoat(Boat);
+        if (result != null)
+        {
+            HandleSuccessCreate();
+            NavigationManager.NavigateTo("/boatsList");
+        }
+
+    }
+
+    public void HandleSuccessCreate()
+    {
+        _modalService.Success(new ConfirmOptions()
+        {
+            Title = "Success.",
+            Content = "Boat Added Successfully.",
+            OnOk = OnOkClick
+        });
+    }
+
+    public Func<ModalClosingEventArgs, Task> OnOkClick = async (e) => { await Task.Delay(1000); };
+}

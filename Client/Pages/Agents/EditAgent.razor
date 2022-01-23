@@ -1,0 +1,83 @@
+﻿@page "/editAgent/{id:int}"
+@inject IAgentService AgentService
+@inject ModalService _modalService
+@inject NavigationManager NavigationManager
+
+
+<div class="content-header">
+    <div class="container-fluid">
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/agentsList">Agents</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit</li>
+            </ol>
+        </nav>
+
+        <hr>
+    </div>
+</div>
+
+<Card Hoverable Title="Edit Agent" Loading="_loading">
+    <Form Model="@Agent"
+          OnFinish="HandleValidSubmit"
+          Layout="vertical">
+        <ValidationSummary />
+        <FormItem Label="Name">
+            <Input @bind-Value="@context.AgentName" />
+        </FormItem>
+        <FormItem Label="Email">
+            <Input @bind-Value="@context.AgentEmail" />
+        </FormItem>
+        <FormItem Label="Phone">
+            <Input @bind-Value="@context.AgentPhone" />
+        </FormItem>
+        <FormItem Label="Address">
+            <Input @bind-Value="@context.AgentAddress" />
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit">
+                Update
+            </Button>
+        </FormItem>
+    </Form>
+</Card>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    bool _loading;
+    public Agent Agent { get; set; } = new Agent();
+
+    protected async override Task OnParametersSetAsync()
+    {
+        _loading = true;
+        Agent = await AgentService.GetAgent(Id);
+        _loading = false;
+    }
+
+    protected async Task HandleValidSubmit()
+    {
+
+        var result = await AgentService.UpdateAgent(Agent);
+        if (result != null)
+        {
+            HandleSuccessUpdate();
+            NavigationManager.NavigateTo("/agentsList");
+        }
+
+    }
+
+    public void HandleSuccessUpdate()
+    {
+        _modalService.Success(new ConfirmOptions()
+        {
+            Title = "Success.",
+            Content = "Agent Updated Successfully.",
+            OnOk = OnOkClick
+        });
+    }
+
+    public Func<ModalClosingEventArgs, Task> OnOkClick = async (e) => { await Task.Delay(1000); };
+}

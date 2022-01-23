@@ -1,0 +1,136 @@
+﻿<div class="top-row pl-4 navbar navbar-dark" hidden>
+    <a class="navbar-brand" href="">BlazorNews</a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+
+    <a href="/" class="brand-link">
+        <img asp-append-version="true" src="images/logo.png" alt="Logo" class="brand-image img-circle elevation-3"
+             style="opacity: .8">
+        <span class="brand-text font-weight-light">C-F-A</span>
+    </a>
+
+    <div class="sidebar">
+
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column text-sm" data-widget="treeview" role="menu" data-accordion="false">
+
+                <li class="nav-item has-treeview">
+                    <NavLink href="/" Match="NavLinkMatch.All" class="nav-link">
+                        <i class="oi oi-home m-1"></i>
+                        <p>
+                            Home
+                        </p>
+                    </NavLink>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <NavLink href="/fishsList" Match="NavLinkMatch.All" class="nav-link">
+                        <i class="oi oi-book m-1"></i>
+                        <p>
+                            Fishs
+                        </p>
+                    </NavLink>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <NavLink href="/agentsList" Match="NavLinkMatch.All" class="nav-link">
+                        <i class="oi oi-people m-1"></i>
+                        <p>
+                            Agents
+                        </p>
+                    </NavLink>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <NavLink href="/boatsList" Match="NavLinkMatch.All" class="nav-link">
+                        <i class="oi oi-flag m-1"></i>
+                        <p>
+                            Boats
+                        </p>
+                    </NavLink>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <NavLink href="/boatLoadsList" Match="NavLinkMatch.All" class="nav-link">
+                        <i class="oi oi-cloud-download m-1"></i>
+                        <p>
+                            Boat Loads
+                        </p>
+                    </NavLink>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <NavLink href="/purchaseOrdersList" Match="NavLinkMatch.All" class="nav-link">
+                        <i class="oi oi-spreadsheet m-1"></i>
+                        <p>
+                            Purchase Orders
+                        </p>
+                    </NavLink>
+                </li>
+
+                <li class="nav-item has-treeview menu-open">
+                    <a  class="nav-link">
+                        <i class="nav-icon fas fa-flag"></i>
+                        <p>
+                            Reports
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <NavLink href="/boatLoadReport" Match="NavLinkMatch.All" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Boat Load Report</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink href="/purchaseOrderReport" Match="NavLinkMatch.All" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Purchase Order Report</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink href="/fishQuantityReport" Match="NavLinkMatch.All" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Month Quantity Report</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink href="/fishBoatReport" Match="NavLinkMatch.All" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Fish Boat Loads Report</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink href="/requestedDeliveredReport" Match="NavLinkMatch.All" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Requested Delivered Report</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink href="/batchDistributionReport" Match="NavLinkMatch.All" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Batch Distribution Report</p>
+                            </NavLink>
+                        </li>
+                    </ul>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+</aside>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

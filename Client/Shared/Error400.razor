@@ -1,0 +1,22 @@
+﻿@page "/error400/{content?}"
+@layout EmptyLayout
+<Card>
+    <Result Status="warning"
+            Title="Bad Request"
+            SubTitle="@Content"
+            Extra=extra />
+</Card>
+@code
+{
+    [Parameter]
+    public string Content { get; set; }
+
+    RenderFragment extra =@<Template>
+        <PageHeader Class="site-page-header" Title="Go Back" Subtitle="Click the Icon to go back" BackIcon="@("backward")" />
+    </Template>;
+
+protected override void OnInitialized()
+{
+Content = Content ?? "There are some problems with your operation.";
+}
+}

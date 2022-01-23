@@ -1,0 +1,23 @@
+﻿@page "/error500/{content?}"
+@layout EmptyLayout
+<Card>
+    <Result Status="500"
+            Title="Internal Server Error."
+            SubTitle="@Content"
+            Extra="extra" />
+</Card>
+
+@code
+{
+    [Parameter]
+    public string Content { get; set; }
+
+    RenderFragment extra =@<Template>
+        <PageHeader Class="site-page-header" Title="Go Back" Subtitle="Click the Icon to go back" BackIcon="@("backward")" />
+    </Template>;
+
+protected override void OnInitialized()
+{
+Content = Content ?? "Sorry, something went wrong.";
+}
+}

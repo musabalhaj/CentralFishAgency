@@ -1,0 +1,90 @@
+﻿@page "/boatLoadReport"
+@inject IBoatService BoatService
+@inject IReportService ReportService
+@inject IJSRuntime JSRuntime
+
+<div class="content-header">
+    <div class="container-fluid">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Boat Loads Report</li>
+            </ol>
+        </nav>
+
+        <hr>
+    </div>
+</div>
+
+
+<Card Hoverable Title="Boat Loads Report">
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <Select DataSource="@Boats"
+                    Placeholder="Please Select Boat ..."
+                    DefaultActiveFirstOption="false"
+                    ValueName="@nameof(Boat.BoatId)"
+                    LabelName="@nameof(Boat.BoatName)"
+                    @bind-Value="@BoatId">
+            </Select>
+        </div>
+        <div class="col-md-3">
+            From <DatePicker DefaultValue="DateTime.Today" @bind-Value="@FromDate" />
+        </div>
+        <div class="col-md-3">
+            To <DatePicker DefaultValue="DateTime.Today" @bind-Value="@ToDate" />
+        </div>
+        <div class="col-md-3">
+            <Button Type="@ButtonType.Primary" HtmlType="submit" OnClick="Search">
+                Search
+            </Button>
+        </div>
+    </div>
+
+    <Table DataSource="BoatLoads" PageSize="10" Loading="_loading" Size="TableSize.Small" Class="table table-responsive">
+        <Column @bind-Field="@context.BoatLoadId" Title="Batch Number">Batch-@context.BoatLoadId</Column>
+        <Column @bind-Field="@context.BoatId">@context.Boat.BoatName</Column>
+        <Column @bind-Field="@context.Total">@context.Total KG</Column>
+        <Column @bind-Field="@context.LoadDeliveryDate" Title="Delivery Date">@context.LoadDeliveryDate.ToLongDateString()</Column>
+        <ActionColumn Title="Action">
+            <Space>
+                <SpaceItem>
+                    <Button Type="@ButtonType.Link" Icon="eye" Color="Color.Blue5"
+                            OnClick="@(() => DisplayBoatLoad(context.BoatLoadId))">
+                    </Button>
+
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </Table>
+</Card>
+
+@code {
+
+    bool _loading;
+    public int BoatId { get; set; }
+    public DateTime FromDate { get; set; }
+    public DateTime ToDate { get; set; }
+    public BoatLoad BoatLoad { get; set; } = new BoatLoad();
+    public List<BoatLoad> BoatLoads { get; set; } = new List<BoatLoad>();
+    public List<Boat> Boats { get; set; } = new List<Boat>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        Boats = (await BoatService.GetBoats()).ToList();
+        _loading = false;
+    }
+
+    protected async Task Search()
+    {
+        _loading = true;
+        BoatLoads = (await ReportService.BoatLoadReport(BoatId, FromDate.Date, ToDate.Date)).ToList();
+        _loading = false;
+    }
+
+    private async Task DisplayBoatLoad(int id)
+    {
+        await JSRuntime.InvokeAsync<object>("open", new object[] { $"displayBoatLoad/{id}", "_blank" });
+    }
+}

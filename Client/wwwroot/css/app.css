@@ -1,0 +1,216 @@
+﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+a, .btn-link {
+    color: #0366d6;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.content {
+    padding-top: 1.1rem;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+.validation-message {
+    color: red;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spin-rev {
+    to {
+        transform: rotate(-360deg);
+    }
+}
+.spinner {
+    margin: 50px auto;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+    .spinner::before, .spinner::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        -ms-border-radius: 50%;
+        -o-border-radius: 50%;
+        animation-name: spin;
+        animation-iteration-count: infinite;
+        animation-timing-function: linear;
+    }
+
+.spinner {
+    margin-top: 200px;
+    position: relative;
+    border: 5px solid #ea2372;
+    border-bottom-color: transparent;
+    animation-name: spin;
+    animation-duration: 1s;
+    animation-play-state: running;
+}
+
+    .spinner::before {
+        width: 64px;
+        height: 64px;
+        top: -12px;
+        left: -12px;
+        border: 5px solid #23a6fd;
+        border-top-color: transparent;
+    }
+
+    .spinner::after {
+        width: 78px;
+        height: 78px;
+        border: 5px solid #fca200;
+        border-left-color: transparent;
+        top: -19px;
+        left: -19px;
+    }
+
+.ant-table-thead > tr > th {
+    position: relative;
+    color: rgba(0,0,0,.85);
+    font-weight: 800 !important;
+    background: #17a2b8 !important;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background .3s ease;
+    color: #FFF !important;
+}
+.ant-table-column-sorters > span {
+    color: #FFF;
+}
+
+.ant-table-filter-trigger {
+    color: black !important;
+}
+
+    .ant-table-filter-trigger.active {
+        color: black !important;
+    }
+
+.ant-pagination-item, .ant-pagination-item-link {
+    border-radius: 50% !important;
+}
+
+.ant-card-hoverable {
+    cursor: auto !important;
+}
+
+.list-group-item {
+    border: none !important;
+}
+
+
+.ant-form-item-control-input-content input {
+    width: -webkit-fill-available !important;
+}
+
+.ant-card {
+    border: 0px !important;
+    box-shadow: 0 2px 6px 0 hsla(0,0%,0%,0.2) !important;
+    border-top-right-radius: 20px !important;
+    border-top-left-radius: 20px !important;
+}
+
+.ant-card-head-title {
+    text-align: center;
+    color: #fff;
+    background: #17a2b8;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+.ant-form-item-control-input-content {
+    display: grid !important;
+}
+
+.ant-modal-header {
+    text-align: center;
+    color: #fff !important;
+    background: #17a2b8 !important;
+}
+
+.ant-modal-content {
+    margin: auto !important;
+    /*    border-left: 4px solid #52c41a !important;
+    border-right: 4px solid #52c41a !important;*/
+}
+
+.ant-avatar-image {
+    margin-left: 90px !important;
+    width: 100px !important;
+    height: 100px !important;
+}
+
+.ant-btn-dangerous {
+    color: #fff !important;
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.ant-alert {
+    background-color: #b7eb8f !important;
+    border-left: 4px solid #3a0647 !important;
+    margin-bottom: 5px !important;
+}
+
+    .ant-alert .ant-alert-success {
+        background-color: #b7eb8f !important;
+        border: 1px solid #b7eb8f !important;
+    }
+
+
+
+.ant-modal-footer .ant-btn-primary {
+    display: none !important;
+}
+.layout-navbar-fixed.layout-fixed .wrapper .sidebar {
+    margin-top: 0px !important;
+    width: max-content !important;
+}

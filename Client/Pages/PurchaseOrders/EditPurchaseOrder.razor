@@ -1,0 +1,292 @@
+﻿@page "/editPurchaseOrder/{id:int}"
+@inject IPurchaseOrderService PurchaseOrderService
+@inject IPurchaseDetailsService PurchaseDetailsService
+@inject IAgentService AgentService
+@inject IFishService FishService
+@inject ModalService _modalService
+@inject NavigationManager NavigationManager
+
+<div class="content-header">
+    <div class="container-fluid">
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/purchaseOrdersList">Purchse Orders</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit</li>
+            </ol>
+        </nav>
+
+        <hr>
+    </div>
+</div>
+
+<Card Hoverable Title="Edit Purchse Order" Loading="_loading">
+    <Form Model="@PurchaseOrder"
+          OnFinish="HandleValidSubmit"
+          Layout="vertical">
+        <ValidationSummary />
+        <FormItem Label="Delivery Date">
+            <DatePicker DefaultValue="DateTime.Today" @bind-Value="@context.PurchaseDate" />
+        </FormItem>
+        <FormItem Label="Agent">
+            <Select DataSource="@Agents"
+                    Placeholder="Please Select Agent ..."
+                    DefaultActiveFirstOption="false"
+                    ValueName="@nameof(Agent.AgentId)"
+                    LabelName="@nameof(Agent.AgentName)"
+                    @bind-Value="@context.AgentId"
+                    EnableSearch
+                    AllowClear>
+            </Select>
+        </FormItem>
+        <FormItem Label="Status">
+            <EnumSelect TEnum="Status" @bind-Value="@context.Status"/>
+        </FormItem>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr class="bg-primary">
+                    <th>Fish Type</th>
+                    <th>Quantity</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <th>
+                        <Select DataSource="@Fishs"
+                                Placeholder="Select Fish Type ..."
+                                DefaultActiveFirstOption="false"
+                                ValueName="@nameof(Fish.FishId)"
+                                LabelName="@nameof(Fish.FishName)"
+                                @bind-Value="@FishId"
+                                EnableSearch
+                                AllowClear>
+                        </Select>
+                    </th>
+                    <th>
+                        <Input @bind-Value="@PurchaseDetails.Quantity" />
+                    </th>
+                    <th>
+                        <Button Type="@ButtonType.Primary" Icon="plus" @onclick="AddPurchaseDetails"></Button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (LoadDetails.Count == 0)
+                {
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>Total = 0.00 KG</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in LoadDetails)
+                    {
+                        <tr>
+                            <td>
+                                @foreach (var fish in Fishs)
+                                {
+                                    if (fish.FishId == item.FishId)
+                                    {
+                                        @fish.FishName
+                                    }
+                                }
+                            </td>
+                            <td>@item.Quantity</td>
+                            <td>
+                                <Button Danger Icon="delete" @onclick="@(()=>DeletePurchaseDetails(item))"></Button>
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>Total = @context.Total.00 KG</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit">
+                Update
+            </Button>
+        </FormItem>
+    </Form>
+</Card>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    public List<Agent> Agents { get; set; } = new List<Agent>();
+    public Agent Agent { get; set; } = new Agent();
+    public List<Fish> Fishs { get; set; } = new List<Fish>();
+    public Fish Fish { get; set; } = new Fish();
+    public PurchaseOrder PurchaseOrder { get; set; } = new PurchaseOrder();
+
+    public List<PurchaseDetails> LoadDetailsToDelete { get; set; } = new List<PurchaseDetails>();
+    public List<PurchaseDetails> LoadDetails { get; set; } = new List<PurchaseDetails>();
+    public PurchaseDetails PurchaseDetails { get; set; } = new PurchaseDetails();
+
+    bool _loading;
+    public int FishId { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        _loading = true;
+
+        Fishs = (await FishService.GetFishs()).ToList();
+        Agents = (await AgentService.GetAgents()).ToList();
+        PurchaseOrder = await PurchaseOrderService.GetPurchaseOrder(Id);
+
+        LoadDetailsToDelete = (await PurchaseDetailsService.GetPurchaseDetailss()).ToList();
+        LoadDetails = LoadDetailsToDelete.Where(e => e.PurchaseOrderId == Id).ToList();
+
+        _loading = false;
+
+    }
+
+
+    private void AddPurchaseDetails()
+    {
+        // check if all feilds not empty
+        if (FishId != 0 && PurchaseDetails.Quantity != 0)
+        {
+
+
+            //get all Fish with the same Id
+            var LoadDetailstoAdd = LoadDetails.Where(e => e.FishId == FishId);
+
+
+            //check if the Fish Id is Exist in the List
+            // if exist sent a Error message else add the row o the list
+            if (LoadDetailstoAdd.Any())
+            {
+                HandleInvalidAdd();
+            }
+            else
+            {
+
+                PurchaseDetails.FishId = FishId;
+                // Add the row to the list
+                LoadDetails.Add(PurchaseDetails);
+                // make the total in Purchse Order = sum of all quantities in the list.
+                PurchaseOrder.Total = LoadDetails.Sum(c => c.Quantity);
+                //clear the selected boat load to add another.
+                PurchaseDetails = new PurchaseDetails();
+
+            }
+        }
+        else
+        {
+            _modalService.Error(new ConfirmOptions()
+            {
+                Title = "Error.",
+                Content = "Please Insert in the all fields.",
+            });
+
+            PurchaseDetails = new PurchaseDetails();
+        }
+
+    }
+
+    public void HandleInvalidAdd()
+    {
+        _modalService.Error(new ConfirmOptions()
+        {
+            Title = "Error.",
+            Content = "This fish type Is Allready Selected .",
+        });
+
+        PurchaseDetails = new PurchaseDetails();
+    }
+
+    //delete row from load Details list.
+    private void DeletePurchaseDetails(PurchaseDetails item)
+    {
+        //check if the list is not empty.
+        if (LoadDetails.Count != 0)
+        {
+            // make the total in Purchse Order = sum of all quantities in the list.
+            PurchaseOrder.Total = PurchaseOrder.Total - item.Quantity;
+        }
+        else
+        {
+            // if the list is empty
+            PurchaseOrder.Total = 0;
+        }
+        //remove the row.
+        LoadDetails.Remove(item);
+    }
+
+    protected async Task HandleValidSubmit()
+    {
+        var fishs = (await FishService.GetFishs()).ToList();
+
+        var fishQuantity = fishs.Sum(c => c.Quantity);
+
+        //check if the Status Changed.
+        if (PurchaseOrder.Status == Status.Approved)
+        {
+            foreach (var item in LoadDetails)
+            {
+                //update the Quantity of each Fish.
+                foreach (var fish in Fishs)
+                {
+                    if (item.FishId == fish.FishId)
+                    {
+                        var Quantity = fish.Quantity - item.Quantity;
+                        fish.Quantity = Quantity;
+                        await FishService.UpdateFish(fish);
+                    }
+                }
+            }
+        }
+        var result = await PurchaseOrderService.UpdatePurchaseOrder(PurchaseOrder);
+        if (result != null)
+        {
+            var DeletedItem = LoadDetailsToDelete.Where(e => e.PurchaseOrderId == Id).ToList();
+
+            foreach (var item in DeletedItem)
+            {
+                await PurchaseDetailsService.DeletePurchaseDetails(item.PurchaseDetailsId);
+            }
+            var NewItem = new PurchaseDetails();
+            foreach (var item in LoadDetails)
+            {
+                //update the Quantity of each Fish.
+                @*foreach (var fish in Fishs)
+                    {
+                        if (item.FishId == fish.FishId)
+                        {
+                            var Quantity = fish.Quantity + item.Quantity;
+                            fish.Quantity = Quantity;
+                            await FishService.UpdateFish(fish);
+                        }
+                    }*@
+
+                NewItem.PurchaseOrderId = Id;
+                NewItem.FishId = item.FishId;
+                NewItem.Quantity = item.Quantity;
+
+                await PurchaseDetailsService.AddPurchaseDetails(NewItem);
+            }
+            HandleSuccessUpdate();
+            NavigationManager.NavigateTo("/purchaseOrdersList");
+        }
+
+    }
+
+    public void HandleSuccessUpdate()
+    {
+        _modalService.Success(new ConfirmOptions()
+        {
+            Title = "Success.",
+            Content = "Purchse Order Updated Successfully.",
+            OnOk = OnOkClick
+        });
+    }
+
+    public Func<ModalClosingEventArgs, Task> OnOkClick = async (e) => { await Task.Delay(1000); };
+}
